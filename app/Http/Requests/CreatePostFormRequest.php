@@ -19,13 +19,13 @@ class CreatePostFormRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
             'topic' => 'required|string|max:50',
-            'content' => 'required|string|max:255|',
+            'content' => 'required|string|max:255',
             'user_id' => 'required|exists:users,id'
         ];
     }
@@ -34,9 +34,10 @@ class CreatePostFormRequest extends FormRequest
     {
         return [
             'topic.required' => 'El campo :attribute es obligatorio.',
+            'topic.max' => 'El campo :attribute no debe superar los 50 caracteres.',
             'content.required' => 'El campo :attribute es obligatorio.',
-            'user_id.required' => 'El campo :attribute es obligatorio.',
-//            'topic.unique' => 'El campo :attribute ya se encuentra registrado.',
+            'content.max' => 'El campo :attribute no debe superar los 255 caracteres.',
+            'user_id.required' => 'El campo :attribute es obligatorio.'
         ];
     }
 }

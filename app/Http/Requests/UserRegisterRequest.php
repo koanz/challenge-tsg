@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
@@ -18,25 +19,30 @@ class UserRegisterRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
+            'name' => 'required|string|max:50',
+            'email' => 'required|string|email|max:50|unique:users',
+            'password' => 'required|string|min:6|max:20|confirmed',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required' => 'El campo nombre es obligatorio.',
-            'email.required' => 'El campo email es obligatorio.',
-            'email.unique' => 'El correo electrónico ya está registrado.',
-            'password.required' => 'El campo contraseña es obligatorio.',
-            'password.confirmed' => 'La confirmación de la contraseña no coincide.',
+            'name.required' => 'El campo :attribute es obligatorio.',
+            'name.max' => 'El campo :attribute no debe superar los 50 caracteres.',
+            'email.required' => 'El campo :attribute es obligatorio.',
+            'email.email' => 'El formato del :attribute es inválido.',
+            'email.max' => 'El campo :attribute no debe superar los 50 caracteres.',
+            'email.unique' => 'El :attribute ya se encuentra registrado.',
+            'password.required' => 'El campo :attribute es obligatorio.',
+            'password.min' => 'El campo :attribute debe tener al menos 6 caracteres.',
+            'password.max' => 'El campo :attribute no debe superar los 20 caracteres.',
+            'password.confirmed' => 'La confirmación del :attribute no coincide.',
         ];
     }
 

@@ -13,7 +13,7 @@ class PostService
     }
 
     public function create($data): Post {
-        Log::info('Creating post in PostService');
+        Log::info('Creating Post in PostService');
 
         return Post::create([
             'topic' => $data['topic'],
@@ -23,7 +23,7 @@ class PostService
     }
 
     public function findByid($id): Post {
-        Log::info('Find Post by Id in PostService');
+        Log::info("Find Post with id: $id in PostService");
 
         try {
             return Post::findOrFail($id);
@@ -35,14 +35,16 @@ class PostService
     }
 
     public function update(UpdatePostFormRequest $data, $id): Post {
+        Log::info("Update Post with id: $id in PostService");
+
         $post = Post::findOrFail($id);
-        $post->update($data->all()); // Sobrescribe todos los datos
+        $post->update($data->all());
 
         return $post;
     }
 
     public function delete($id): void {
-        Log::info('Delete Post with id: ' . $id . 'in PostService');
+        Log::info("Delete Post with id: $id in PostService");
         $post = Post::findOrFail($id);
 
         $post->delete();

@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('topic');
             $table->string('content');
-            $table->foreignId('user_id')->references('id')->on('users');
             $table->unique(['topic', 'user_id']);
+            $table->foreignId('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }

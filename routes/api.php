@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostRestController;
 use App\Http\Controllers\UserRestController;
+use App\Http\Middleware\CanCreatePost;
 use App\Http\Middleware\CanCreateUser;
 use App\Http\Middleware\JwtTokenAuthenticate;
 use App\Http\Middleware\CanDeleteUser;
@@ -38,6 +39,7 @@ Route::middleware([JwtTokenAuthenticate::class])->group(function () {
         ->name('post-index');
 
     Route::post('/posts', [PostRestController::class, 'create'])
+        ->middleware(CanCreatePost::class)
         ->name('post-create');
 
     Route::get('/posts/{id}', [PostRestController::class, 'find'])

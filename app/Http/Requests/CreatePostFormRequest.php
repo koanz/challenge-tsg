@@ -28,6 +28,9 @@ class CreatePostFormRequest extends BaseFormRequest
         ];
     }
 
+    /**
+     * Mensajes para errores de validación.
+     */
     public function messages(): array
     {
         return [

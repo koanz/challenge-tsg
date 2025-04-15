@@ -27,13 +27,16 @@ class UpdatePostFormRequest extends BaseFormRequest
         ];
     }
 
+    /**
+     * Mensajes para errores de validación.
+     */
     public function messages(): array
     {
         return [
             'topic.string' => 'El campo :attribute no puede estar vacío.',
             'topic.max' => 'El campo :attribute no puede superar los 50 caracteres.',
             'content.string' => 'El campo :attribute no puede estar vacío.',
-            'content.max' => 'El :attribute no puede superar los 255 caracteres.',
+            'content.max' => 'El campo :attribute no puede superar los 255 caracteres.',
         ];
     }
 

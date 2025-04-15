@@ -2,22 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginFormRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Models\User;
-use Illuminate\Database\QueryException;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
+/**
+ * @OA\Tag(
+ *     name="Autenticación",
+ *     description="Endpoints: registro, inicio y cierre de sesión"
+ * )
+ */
 class AuthController extends Controller
 {
 
     /**
      * @OA\Post(
      *     path="/api/register",
-     *     summary="Registro de usuarios en la aplicación",
+     *     summary="Registro de usuarios",
      *     tags={"Autenticación"},
      *     description="Registro de usuario",
      *     @OA\RequestBody(
@@ -31,8 +36,8 @@ class AuthController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
-     *         description="Registro exitoso",
+     *         response=201,
+     *         description="Created",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Registro exitoso"),
      *             @OA\Property(property="token", type="string", example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
@@ -40,7 +45,7 @@ class AuthController extends Controller
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal Server Error"
      *     )
      * )
      */
@@ -50,20 +55,20 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-            ]);
+            ])->assignRole("user");
 
             $token = JWTAuth::fromUser($user);
 
             return response()->json([
-                'message' => 'Usuario registrado exitosamente',
-                'token' => $token,
-            ], 201);
+                "message" => "Usuario registrado exitosamente",
+                "token" => $token,
+            ], Response::HTTP_CREATED);
     }
 
     /**
      * @OA\Post(
      *     path="/api/login",
-     *     summary="Inicia sesión en la aplicación",
+     *     summary="Inicio de sesión",
      *     tags={"Autenticación"},
      *     description="Inicio de sesión del usuario con retorno de token JWT necesario para poder acceder a las rutas de Usuarios y Posts.",
      *     @OA\RequestBody(
@@ -76,7 +81,7 @@ class AuthController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Inicio de sesión exitoso",
+     *         description="Ok",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Inicio de sesión exitoso"),
      *             @OA\Property(property="token", type="string", example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
@@ -84,30 +89,70 @@ class AuthController extends Controller
      *     ),
      *     @OA\Response(
      *         response=401,
-     *         description="Credenciales inválidas",
+     *         description="Unauthorize",
      *         @OA\JsonContent(
      *             @OA\Property(property="error", type="string", example="Credenciales inválidas")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal Server Error"
      *     )
      * )
      */
-    public function login(Request $request): JsonResponse
+    public function login(LoginFormRequest $request): JsonResponse
     {
+        $data = $request->validated();
         $credentials = $request->only('email', 'password');
 
-        if (!$token = JWTAuth::attempt($credentials)) {
+        if (!$token = JWTAuth::attempt($data)) {
             return response()->json([
-                'error' => 'Credenciales inválidas'
-            ], 401);
+                "status_code" => Response::HTTP_FORBIDDEN,
+                "message" => "Credenciales inválidas"
+            ], Response::HTTP_FORBIDDEN);
         }
 
         return response()->json([
-            'message' => 'Inicio de sesión exitoso',
-            'token' => $token,
+            "message" => "Inicio de sesión exitoso",
+            "token" => $token,
         ]);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     summary="Cierre de sesión",
+     *     security={{"BearerAuth":{}}},
+     *     tags={"Autenticación"},
+     *     description="Cierre de sesión del usuario",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Ok",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Logout exitoso")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error"
+     *     )
+     * )
+     */
+    public function logout(): JsonResponse
+    {
+        try {
+            // Invalidar el token
+            JWTAuth::invalidate(JWTAuth::getToken());
+
+            return response()->json([
+                "message" => "Cierre de sesión exitoso",
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
+                "message" => "Error al intentar cerrar la sesión",
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

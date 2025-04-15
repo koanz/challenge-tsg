@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\PostNotFoundException;
 use App\Http\Requests\CreatePostFormRequest;
 use App\Http\Requests\UpdatePostFormRequest;
 use App\Http\Resources\PostResource;
@@ -9,7 +10,14 @@ use App\Models\Post;
 use App\Services\PostService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @OA\Tag(
+ *     name="Posts",
+ *     description="Endpoints del crud de posts"
+ * )
+ */
 class PostRestController extends Controller
 {
     protected PostService $postService;
@@ -21,28 +29,29 @@ class PostRestController extends Controller
     /**
      * @OA\Get(
      *     path="/api/posts",
-     *     summary="Obtiene un listado de posts",
+     *     summary="Obtener un listado de posts",
      *     tags={"Posts"},
      *     security={{"BearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
-     *         description="Operación exitosa",
+     *         description="OK",
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(ref="#/components/schemas/PostResource")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=401,
-     *         description="No autorizado"
+     *         response=404,
+     *         description="Not Found"
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="No se encontraron posts"
+     *         response=500,
+     *         description="Internal Server Error"
      *     )
      * )
      */
     public function index(): JsonResponse {
+        Log::info("Retrieving list of Post in PostRestController");
         $posts = Post::with('user')->paginate(10);
 
         return response()->json(PostResource::collection($posts));
@@ -54,22 +63,56 @@ class PostRestController extends Controller
      *     summary="Crear un post",
      *     tags={"Posts"},
      *     security={{"BearerAuth":{}}},
+     *     @OA\RequestBody(
+     *          required=true,
+     *          description="Atributos para crear el post",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(
+     *                  property="topic",
+     *                  type="string",
+     *                  description="Tema del post",
+     *                  example="Lorem Ipsum"
+     *              ),
+     *              @OA\Property(
+     *                  property="content",
+     *                  type="string",
+     *                  description="Contenido del post",
+     *                  example="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+     *              ),
+     *              @OA\Property(
+     *                  property="user_id",
+     *                  type="integer",
+     *                  description="Id del usuario",
+     *                  example="1"
+     *              )
+     *          )
+     *      ),
      *     @OA\Response(
      *         response=201,
-     *         description="Creación exitosa",
+     *         description="Created",
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(ref="#/components/schemas/PostResource")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=401,
-     *         description="No autorizado"
+     *          response=400,
+     *          description="Bad Request",
+     *          @OA\JsonContent(
+     *              type="array",
+     *              @OA\Items(ref="#/components/schemas/UserResource")
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error"
      *     )
      * )
      */
     public function create(CreatePostFormRequest $request): JsonResponse {
-        Log::info("Create Post method in PostRestController");
+        Log::info("Creating Post in PostRestController");
+
         $data = $request->validated();
 
         return response()->json(new PostResource($this->postService->create($data)), 201);
@@ -78,7 +121,7 @@ class PostRestController extends Controller
     /**
      * @OA\Get(
      *     path="/api/posts/{id}",
-     *     summary="Obtiene un post por id",
+     *     summary="Obtener un post por id",
      *     tags={"Posts"},
      *     security={{"BearerAuth":{}}},
      *     @OA\Parameter(
@@ -93,28 +136,35 @@ class PostRestController extends Controller
      *       ),
      *     @OA\Response(
      *         response=200,
-     *         description="Operación exitosa",
+     *         description="Ok",
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(ref="#/components/schemas/PostResource")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=401,
-     *         description="No autorizado"
+     *         response=404,
+     *         description="Not Found"
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="El post no existe"
+     *         response=500,
+     *         description="Internal Server Error"
      *     )
      * )
      */
     public function find($id): JsonResponse {
-        Log::info("Find/Read Post with id: $id in PostRestController");
+        Log::info("Retrieving Post with id $id in PostRestController");
 
         try {
             $post = $this->postService->findById($id);
             return response()->json(new PostResource($post));
+        } catch (PostNotFoundException $e) {
+            Log::error("Post with id $id Not Found.");
+
+            return response()->json([
+                "status_code" => Response::HTTP_NOT_FOUND,
+                "message" => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -122,17 +172,157 @@ class PostRestController extends Controller
         }
     }
 
+    /**
+     * @OA\Patch(
+     *     path="/api/posts/{id}",
+     *     summary="Actualizar un post por id",
+     *     tags={"Posts"},
+     *     security={{"BearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID del post a actualizar",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer",
+     *              example=1
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Atributos para actualizar el post",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="topic",
+     *                 type="string",
+     *                 description="Tema del post",
+     *                 example="Lorem Ipsum"
+     *             ),
+     *             @OA\Property(
+     *                 property="content",
+     *                 type="string",
+     *                 description="Contenido del post",
+     *                example="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+     *             ),
+     *             @OA\Property(
+     *                 property="user_id",
+     *                 type="integer",
+     *                 description="Id del usuario",
+     *                 example="1"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Ok",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/PostResource")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Not Found"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error"
+     *     )
+     * )
+     */
     public function update(UpdatePostFormRequest $request, $id): JsonResponse {
-        Log::info('Update Post method in PostRestController');
-        $post = $this->postService->update($request, $id);
+        Log::info('Updating Post in PostRestController');
+
+        try {
+            $post = $this->postService->update($request->validated(), $id);
+        } catch (PostNotFoundException $e) {
+            Log::error("Post with id $id Not Found.");
+
+            return response()->json([
+                "status_code" => Response::HTTP_NOT_FOUND,
+                "message" => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            Log::error("Error inesperado: " .$e->getMessage());
+            return response()->json([
+                "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
+                "message" => "Error interno del servidor"
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
         return response()->json(new PostResource($post));
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/posts/{id}",
+     *     summary="Eliminar un post por su id",
+     *     tags={"Posts"},
+     *     security={{"BearerAuth":{}}},
+     *     @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="Id del post a eliminar",
+     *          required=true,
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=1
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Ok",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/UserResource")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Not Found"
+     *     ),
+     *     @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error"
+     *      )
+     * )
+     */
     public function delete($id): JsonResponse {
-        Log::info('Delete Post method in PostRestController');
-        $this->postService->delete($id);
+        Log::info("Deleting Post with id $id in PostRestController");
 
-        return response()->json(['message' => 'Se ha eliminado exitosamente']);
+        try {
+            $this->postService->delete($id);
+        } catch (PostNotFoundException $e) {
+            Log::error("Error trying to delete post: " .$e->getMessage(), ['id' => $id]);
+
+            return response()->json([
+                "status_code" => Response::HTTP_NOT_FOUND,
+                "message" => $e->getMessage()
+            ], Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            Log::error("Unexpected error: ".$e->getMessage());
+
+            return response()->json([
+                "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
+                "message" => "Error interno del servidor"
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json([
+            'message' => 'Se ha eliminado exitosamente.'
+        ]);
     }
 }

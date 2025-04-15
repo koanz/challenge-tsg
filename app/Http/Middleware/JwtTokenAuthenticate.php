@@ -19,19 +19,17 @@ class JwtTokenAuthenticate
 
         if (!$token) {
             return response()->json([
-                'error' => 'Token no encontrado. Acceso denegado.',
-                'status_code' => Response::HTTP_UNAUTHORIZED,
+                "status_code" => Response::HTTP_UNAUTHORIZED,
+                "message" => "Token no encontrado. Acceso denegado.",
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Si usas un paquete como `tymon/jwt-auth`, puedes validar el token aquí.
         try {
-            // Ejemplo con JWT-Auth (si está configurado):
             auth('api')->setToken($token)->authenticate();
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Token inválido o expirado.',
-                'status_code' => Response::HTTP_UNAUTHORIZED,
+                "status_code" => Response::HTTP_UNAUTHORIZED,
+                "message" => "Token inválido o expirado.",
             ], Response::HTTP_UNAUTHORIZED);
         }
 

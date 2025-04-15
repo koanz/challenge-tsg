@@ -46,8 +46,7 @@ return [
                 'annotations' => [
                     // Se incluyen los directorios que contienen las anotaciones del proyecto en swagger
                     base_path('app/Http/Controllers'),
-                    base_path('app/Http/Resources'),
-                    base_path('app/Swagger'),
+                    base_path('app/Http/Resources')
                 ],
             ],
         ],

@@ -14,7 +14,7 @@
                 "tags": [
                     "Autenticación"
                 ],
-                "summary": "Registro de usuarios en la aplicación",
+                "summary": "Registro de usuarios",
                 "description": "Registro de usuario",
                 "operationId": "8a56853624e025573120a09a4c75d468",
                 "requestBody": {
@@ -58,8 +58,8 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Registro exitoso",
+                    "201": {
+                        "description": "Created",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -79,7 +79,7 @@
                         }
                     },
                     "500": {
-                        "description": "Error interno del servidor"
+                        "description": "Internal Server Error"
                     }
                 }
             }
@@ -89,8 +89,8 @@
                 "tags": [
                     "Autenticación"
                 ],
-                "summary": "Inicia sesión en la aplicación",
-                "description": "Obtiene un token JWT necesario para poder acceder a las rutas de Usuarios y Posts.",
+                "summary": "Inicio de sesión",
+                "description": "Inicio de sesión del usuario con retorno de token JWT necesario para poder acceder a las rutas de Usuarios y Posts.",
                 "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
                 "requestBody": {
                     "required": true,
@@ -122,7 +122,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Inicio de sesión exitoso",
+                        "description": "Ok",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -142,7 +142,7 @@
                         }
                     },
                     "401": {
-                        "description": "Credenciales inválidas",
+                        "description": "Unauthorize",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -158,9 +158,45 @@
                         }
                     },
                     "500": {
-                        "description": "Error interno del servidor"
+                        "description": "Internal Server Error"
                     }
                 }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Cierre de sesión",
+                "description": "Cierre de sesión del usuario",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logout exitoso"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
             }
         },
         "/api/posts": {
@@ -168,11 +204,11 @@
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Obtiene un listado de posts",
+                "summary": "Obtener un listado de posts",
                 "operationId": "cf1f570853ec743d3475de7560dcf592",
                 "responses": {
                     "200": {
-                        "description": "Operación exitosa",
+                        "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -184,11 +220,11 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "No autorizado"
-                    },
                     "404": {
-                        "description": "No se encontraron posts"
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 },
                 "security": [
@@ -203,9 +239,37 @@
                 ],
                 "summary": "Crear un post",
                 "operationId": "91b3652545008a21697c819e239991bc",
+                "requestBody": {
+                    "description": "Atributos para crear el post",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "topic": {
+                                        "description": "Tema del post",
+                                        "type": "string",
+                                        "example": "Lorem Ipsum"
+                                    },
+                                    "content": {
+                                        "description": "Contenido del post",
+                                        "type": "string",
+                                        "example": "Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+                                    },
+                                    "user_id": {
+                                        "description": "Id del usuario",
+                                        "type": "integer",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
-                        "description": "Creación exitosa",
+                        "description": "Created",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -217,8 +281,21 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "No autorizado"
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UserResource"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 },
                 "security": [
@@ -233,7 +310,7 @@
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Obtiene un post por id",
+                "summary": "Obtener un post por id",
                 "operationId": "a1fba94fb495434710b280cb77b2e971",
                 "parameters": [
                     {
@@ -249,7 +326,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Operación exitosa",
+                        "description": "Ok",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -261,11 +338,138 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "No autorizado"
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Eliminar un post por su id",
+                "operationId": "4de6e9ed624cedf2a431c23ac1d64847",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Id del post a eliminar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UserResource"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
                     },
                     "404": {
-                        "description": "El post no existe"
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Actualizar un post por id",
+                "operationId": "bc4e128d3cbfec917f20857e747c8b23",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del post a actualizar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Atributos para actualizar el post",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "topic": {
+                                        "description": "Tema del post",
+                                        "type": "string",
+                                        "example": "Lorem Ipsum"
+                                    },
+                                    "content": {
+                                        "description": "Contenido del post",
+                                        "type": "string",
+                                        "example": "Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+                                    },
+                                    "user_id": {
+                                        "description": "Id del usuario",
+                                        "type": "integer",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PostResource"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 },
                 "security": [
@@ -280,7 +484,7 @@
                 "tags": [
                     "Usuarios"
                 ],
-                "summary": "Obtiene un listado de usuarios",
+                "summary": "Obtener un listado de usuarios",
                 "operationId": "bed93fa058796b72d3cd2c5f0f2f151c",
                 "responses": {
                     "200": {
@@ -296,11 +500,11 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "No autorizado"
-                    },
                     "404": {
-                        "description": "No se encontraron usuarios"
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 },
                 "security": [
@@ -313,11 +517,44 @@
                 "tags": [
                     "Usuarios"
                 ],
-                "summary": "Obtiene un post por id",
+                "summary": "Crear un usuario",
                 "operationId": "4e2042974e9bd2d0c2fc9f0f148e54d4",
+                "requestBody": {
+                    "description": "Atributos para crear el usuario",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "description": "Nombre del usuario",
+                                        "type": "string",
+                                        "example": "Juan"
+                                    },
+                                    "email": {
+                                        "description": "Email del usuario",
+                                        "type": "string",
+                                        "example": "juan@email.com"
+                                    },
+                                    "password": {
+                                        "description": "Contraseña del usuario",
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "password_confirmation": {
+                                        "description": "Confirmación de la contraseña",
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Creación exitosa",
+                    "201": {
+                        "description": "Created",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -329,8 +566,14 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "No autorizado"
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 },
                 "security": [
@@ -345,13 +588,13 @@
                 "tags": [
                     "Usuarios"
                 ],
-                "summary": "Obtiene un usuario por id",
+                "summary": "Obtener un usuario por id",
                 "operationId": "7c3e1172225cbabb08f25f3924c41d6d",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID del usuario que se quiere recuperar",
+                        "description": "Id del usuario a obtener",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -361,7 +604,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Operación exitosa",
+                        "description": "Ok",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -373,11 +616,156 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "No autorizado"
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Eliminar un usuario por su id",
+                "operationId": "414c1e1837ae567adf9d6fbe3d24b1f1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Id del usuario a eliminar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UserResource"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
                     },
                     "404": {
-                        "description": "El usuario no existe"
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Actualizar un usuario por su id",
+                "operationId": "caa1fdf4e5cda8a628abb9898506ff14",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Id del usuario a actualizar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Atributos para actualizar el usuario",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "description": "Nombre del usuario",
+                                        "type": "string",
+                                        "example": "Juan"
+                                    },
+                                    "email": {
+                                        "description": "Email del usuario",
+                                        "type": "string",
+                                        "example": "juan@email.com"
+                                    },
+                                    "password": {
+                                        "description": "Contraseña del usuario",
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "password_confirmation": {
+                                        "description": "Confirmación de la contraseña",
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UserResource"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "description": "Detalles de los errores de validación",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 },
                 "security": [
@@ -414,7 +802,7 @@
                 "description": "Esquema del usuario asociado a un post",
                 "properties": {
                     "id": {
-                        "description": "ID del usuario",
+                        "description": "Id del usuario",
                         "type": "integer"
                     },
                     "name": {
@@ -422,7 +810,7 @@
                         "type": "string"
                     },
                     "email": {
-                        "description": "Correo electrónico del usuario",
+                        "description": "Email del usuario",
                         "type": "string"
                     }
                 },
@@ -441,15 +829,15 @@
     "tags": [
         {
             "name": "Autenticación",
-            "description": "Autenticación"
+            "description": "Endpoints: registro, inicio y cierre de sesión"
         },
         {
             "name": "Posts",
-            "description": "Posts"
+            "description": "Endpoints del crud de posts"
         },
         {
             "name": "Usuarios",
-            "description": "Usuarios"
+            "description": "Endpoints del crud de usuarios"
         }
     ]
 }

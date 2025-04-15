@@ -17,7 +17,7 @@ class CanCreateUser
     public function handle(Request $request, Closure $next): Response
     {
         // Recupera el usuario autenticado
-        $authenticatedUser = Auth::getUser();
+        $authenticatedUser = Auth::user();
 
         // Valida si el usuario posee rol user
         if($authenticatedUser->hasRole('user')) {

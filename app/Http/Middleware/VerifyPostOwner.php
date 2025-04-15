@@ -27,11 +27,11 @@ class VerifyPostOwner
         try {
             $post = Post::findOrFail($postId);
         } catch (ModelNotFoundException $e) {
-            Log::error("Post con ID {$postId} no encontrado.");
+            Log::error("Post with id $postId Not Found.");
 
             return response()->json([
                 "status_code" => Response::HTTP_NOT_FOUND,
-                "message" => "El Post con id {$postId} no se ha encontrado."
+                "message" => "El Post con id $postId no se ha encontrado."
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -42,7 +42,7 @@ class VerifyPostOwner
             if ($authenticatedUser->id !== $post->user_id) {
                 return response()->json([
                     "status_code" => Response::HTTP_FORBIDDEN,
-                    "message" => "No tienes permiso para realizar esta acción."
+                    "message" => "Operación inválida."
                 ], Response::HTTP_FORBIDDEN);
             }
         }

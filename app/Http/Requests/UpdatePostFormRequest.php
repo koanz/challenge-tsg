@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-class UpdatePostFormRequest extends FormRequest
+class UpdatePostFormRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -17,23 +17,24 @@ class UpdatePostFormRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'topic' => 'sometimes|string|max:50',       // Valida solo si el campo está presente.
-            'content' => 'sometimes|string|max:255',    // Valida solo si el campo está presente.
+            'topic' => 'sometimes|string|max:50',
+            'content' => 'sometimes|string|max:255',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'topic.string' => 'El topic debe ser un texto.',
-            'topic.max' => 'El topic no debe tener más de 50 caracteres.',
-            'content.string' => 'El contenido debe ser un texto.',
-            'content.max' => 'El contenido no debe tener más de 255 caracteres.',
+            'topic.string' => 'El campo :attribute no puede estar vacío.',
+            'topic.max' => 'El campo :attribute no puede superar los 50 caracteres.',
+            'content.string' => 'El campo :attribute no puede estar vacío.',
+            'content.max' => 'El :attribute no puede superar los 255 caracteres.',
         ];
     }
+
 }

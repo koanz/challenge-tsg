@@ -3,10 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Log;
 
-class CreatePostFormRequest extends FormRequest
+class CreatePostFormRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -34,10 +32,11 @@ class CreatePostFormRequest extends FormRequest
     {
         return [
             'topic.required' => 'El campo :attribute es obligatorio.',
-            'topic.max' => 'El campo :attribute no debe superar los 50 caracteres.',
+            'topic.max' => 'El campo :attribute no puede superar los 50 caracteres.',
             'content.required' => 'El campo :attribute es obligatorio.',
-            'content.max' => 'El campo :attribute no debe superar los 255 caracteres.',
+            'content.max' => 'El campo :attribute no puede superar los 255 caracteres.',
             'user_id.required' => 'El campo :attribute es obligatorio.'
         ];
     }
+
 }

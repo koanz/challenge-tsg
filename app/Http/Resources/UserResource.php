@@ -17,9 +17,9 @@ class UserResource extends JsonResource
      *     schema="UserResource",
      *     type="object",
      *     description="Esquema del usuario asociado a un post",
-     *     @OA\Property(property="id", type="integer", description="ID del usuario"),
+     *     @OA\Property(property="id", type="integer", description="Id del usuario"),
      *     @OA\Property(property="name", type="string", description="Nombre del usuario"),
-     *     @OA\Property(property="email", type="string", description="Correo electrónico del usuario")
+     *     @OA\Property(property="email", type="string", description="Email del usuario")
      * )
      */
 

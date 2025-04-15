@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Http\Requests\UserRegisterRequest;
 use App\Models\User;
 use App\Exceptions\UserNotFountException;
 
@@ -16,50 +15,49 @@ class UserService
     }
 
     public function create($data): User {
-        Log::info('Creating User in UserService');
+        Log::info('Creating user in UserService');
 
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => hash::make($data['password']),
-        ]);
+        ])->assignRole("user");
     }
 
     public function findByid($id): User {
-        Log::info("Find User with id: $id in UserService");
+        Log::info("Retrieving user with id $id in UserService");
 
         try {
             return User::findOrFail($id);
         } catch (ModelNotFoundException $e) {
-            Log::error("Usuario con ID {$id} no encontrado.");
+            Log::error("User with id $id Not Found.");
 
-            throw new \Exception("El Usuario con ID {$id} no se ha encontrado.");
+            throw new UserNotFountException($id);
         }
     }
 
-    public function update(UserRegisterRequest $data, $id): User {
-        Log::info("Update User with id: $id in UserService");
+    public function update($data, $id): User {
+        Log::info("Updating user with id $id in UserService");
 
         try {
             $user = User::findOrFail($id);
+            $user->update($data);
+
+            return $user;
         } catch (ModelNotFoundException $e) {
-            Log::error("Usuario con ID {$id} no encontrado.");
+            Log::error("User with id $id Not Found.");
 
-            throw new \Exception("El Usuario con ID {$id} no se ha encontrado.");
+            throw new UserNotFountException($id);
         }
-
-        $user->update($data->all());
-
-        return $user;
     }
 
     public function delete($id): void {
-        Log::info("Delete User with id: $id in UserService");
+        Log::info("Deleting user with id $id in UserService");
 
         try {
             $user = User::findOrFail($id);
         } catch (ModelNotFoundException $e) {
-            Log::error("Usuario con ID {$id} no encontrado.");
+            Log::error("User with id $id Not Found.");
 
             throw new UserNotFountException($id);
         }

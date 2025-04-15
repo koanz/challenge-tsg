@@ -6,9 +6,9 @@ use Exception;
 
 class PostNotFoundException extends Exception {
     private $id;
-    protected $message = 'El Usuario con id {$id} no se encontró.';
-
-    public function __construct($id) {
+    public function __construct($id)
+    {
         $this->id = $id;
+        parent::__construct("El Post con id {$id} no se ha encontrado.");
     }
 }

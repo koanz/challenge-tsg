@@ -3,14 +3,22 @@
 namespace App\Services;
 
 use App\Exceptions\PostNotFoundException;
-use App\Http\Requests\UpdatePostFormRequest;
 use App\Models\Post;
+use App\Utils\Pagination;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 
 class PostService
 {
     public function __construct() {
+    }
+
+    public function list(Pagination $pagination): LengthAwarePaginator {
+        Log::info("Retrieving list of Posts in PostService");
+
+        return Post::with('user')
+            ->paginate($pagination->getPerPage(), ['*'], 'page', $pagination->getCurrentPage());
     }
 
     public function create($data): Post {

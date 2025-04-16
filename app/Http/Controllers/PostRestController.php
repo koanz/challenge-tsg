@@ -6,10 +6,11 @@ use App\Exceptions\PostNotFoundException;
 use App\Http\Requests\CreatePostFormRequest;
 use App\Http\Requests\UpdatePostFormRequest;
 use App\Http\Resources\PostResource;
-use App\Models\Post;
 use App\Services\PostService;
+use App\Utils\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -20,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class PostRestController extends Controller
 {
-    protected PostService $postService;
+    private PostService $postService;
 
     public function __construct(PostService $postService) {
         $this->postService = $postService;
@@ -32,6 +33,20 @@ class PostRestController extends Controller
      *     summary="Obtener un listado de posts",
      *     tags={"Posts"},
      *     security={{"BearerAuth":{}}},
+     *     @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="Cantidad de registros por página. Por defecto es 10.",
+     *          required=false,
+     *          @OA\Schema(type="integer", example=10)
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          description="Número de página. Por defecto es 1.",
+     *          required=false,
+     *          @OA\Schema(type="integer", example=1)
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="OK",
@@ -50,11 +65,21 @@ class PostRestController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse {
+    public function index(Request $request): JsonResponse {
         Log::info("Retrieving list of Post in PostRestController");
-        $posts = Post::with('user')->paginate(10);
+        $pagination = new Pagination($request->query('per_page', 10), $request->query('page', 1));
 
-        return response()->json(PostResource::collection($posts));
+        $posts = $this->postService->list($pagination);
+
+        return response()->json([
+            'data' => PostResource::collection($posts),
+            'pagination' => [
+                'current_page' => $posts->currentPage(),
+                'per_page' => $posts->perPage(),
+                'total' => $posts->total(),
+                'last_page' => $posts->lastPage(),
+            ]
+        ]);
     }
 
     /**

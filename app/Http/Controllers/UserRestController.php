@@ -8,8 +8,10 @@ use App\Http\Requests\UserRegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
+use App\Utils\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -32,6 +34,20 @@ class UserRestController extends Controller
      *     summary="Obtener un listado de usuarios",
      *     tags={"Usuarios"},
      *     security={{"BearerAuth":{}}},
+     *     @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="Cantidad de registros por página. Por defecto es 10.",
+     *          required=false,
+     *          @OA\Schema(type="integer", example=10)
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          description="Número de página. Por defecto es 1.",
+     *          required=false,
+     *          @OA\Schema(type="integer", example=1)
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Operación exitosa",
@@ -50,10 +66,19 @@ class UserRestController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse {
-        $users = User::paginate(10);
+    public function index(Request $request): JsonResponse {
+        $pagination = new Pagination($request->query('per_page', 10), $request->query('page', 1));
+        $users = $this->userService->list($pagination);
 
-        return response()->json(UserResource::collection($users));
+        return response()->json([
+            'data' => UserResource::collection($users),
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+                'last_page' => $users->lastPage(),
+            ]
+        ]);
     }
 
     /**
